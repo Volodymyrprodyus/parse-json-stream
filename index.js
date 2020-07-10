@@ -29,7 +29,6 @@ module.exports = class {
 				break;
 				
 			case "}":
-				console.log(braces);
 				if (--braces == 0) {
 					const string = this.data.substring(this.cursor, i + 1);
 
