@@ -1,48 +1,57 @@
 "use strict";
 
-class Parser {
+module.exports = class {
 	constructor(callback) {
 		this.brackets = 0;
-		this.buffer = "";
 		this.callback = callback;
-		this.last = 0;
+		this.cursor = 0;
+		this.data = "";
 	}
 
 	parse(data) {
-		this.buffer += data;
-		let begin = this.last;
+		this.data += data;
 		let braces = 0;
 
-		for (let i = begin; i < this.buffer.length; ++i) {
-			const TOKEN = this.buffer[i];
-
-			if (TOKEN == "[") {
-				++this.brackets;
-
-				if (begin == this.last) {
-					this.last = i + 1;
+		for (let i = this.cursor; i < this.data.length; ++i) {
+			switch (this.data[i]) {
+			case "[":
+				if (++this.brackets == 1) {
+					this.cursor = i + 1;
 				}
-			} else if (TOKEN == "{") {
-				++braces;
 
-				if (begin == this.last) {
-					begin = i;
-				}
-			} else if (TOKEN == "}" && --braces == 0) {
-				this.last = i + 1;
-				const string = this.buffer.substring(begin, this.last);
-				begin = this.last;
+				break;
 
-				try {
-					this.callback(null, JSON.parse(string));
-				} catch(error) {
-					this.callback(new Error(error.message + " while parsing " + string));
+			case "{":
+				if (++braces == 1) {
+					this.cursor = i;
 				}
-			} else if (TOKEN == "]" && --this.brackets == 0) {
-				this.callback();
+
+				break;
+				
+			case "}":
+				console.log(braces);
+				if (--braces == 0) {
+					const string = this.data.substring(this.cursor, i + 1);
+
+					try {
+						this.callback(null, JSON.parse(string));
+					} catch (error) {
+						this.callback(new Error(`${error.message} while parsing ${string}`));
+					}
+	
+					this.cursor = i + 1;
+				}
+
+				break;
+				
+			case "]":
+				if (--this.brackets == 0) {
+					this.callback();
+					this.cursor = i;
+				}
+
+				break;
 			}
 		}
 	}
-}
-
-module.exports = Parser;
+};
