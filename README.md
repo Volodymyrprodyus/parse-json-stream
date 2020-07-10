@@ -10,10 +10,10 @@ parser for large streams of json data, allows processing objects asynchronously
 
 ## usage
 ```
-const Parser = require('parse-json-stream');
+const Parser = require("parse-json-stream");
 
 let parser = new Parser(function (error, object) {
- 	if (error) {
+	if (error) {
 		console.log(error.message);
 	} else if (object) {
 		console.log(object);
