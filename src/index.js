@@ -11,11 +11,13 @@ module.exports = class {
 	parse(data) {
 		this.data += data;
 		let braces = 0;
+		let brackets = this.brackets;
 
 		for (let i = this.cursor; i < this.data.length; ++i) {
 			switch (this.data[i]) {
 			case "[":
-				if (++this.brackets == 1) {
+				if (++brackets == 1) {
+					this.brackets = brackets;
 					this.cursor = i + 1;
 				}
 
@@ -44,7 +46,8 @@ module.exports = class {
 				break;
 				
 			case "]":
-				if (--this.brackets == 0) {
+				if (--brackets == 0) {
+					this.brackets = brackets;
 					this.callback();
 					this.cursor = i;
 				}
