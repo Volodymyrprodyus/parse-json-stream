@@ -14,7 +14,8 @@ module.exports = class {
 		this.level = 0;
 	}
 
-	parse(data) {
+	parse(buffer) {
+		const data = buffer.toString();
 		const length = this.data.length;
 		this.data += data;
 
