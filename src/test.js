@@ -36,29 +36,74 @@ const data = JSON.stringify({
 	]
 });
 
-let done = false;
-let errors = [];
-let objects = [];
+const tests = {
+	"basic" () {
+		let done = false;
+		const errors = [];
+		const objects = [];
+		
+		let parser = new Parser((error, object) => {
+			if (error) {
+				errors.push(error.message);
+			} else if (object) {
+				objects.push(object);
+			} else {
+				done = true;
+			}
+		});
+		
+		parser.parse(data);
+		assert.equal(errors.length, 0);
+		assert.equal(objects.length, 3);
+		assert.equal(done, true);
+	},
+	"randomStress" () {
+		for (let i = 0; i < 100; ++i) {
+			const chunks = [];
+			let done = false;
+			const errors = [];
+			const objects = [];
+			
+			let parser = new Parser((error, object) => {
+				if (error) {
+					errors.push(error.message);
+				} else if (object) {
+					objects.push(object);
+				} else {
+					done = true;
+				}
+			});
+			
+			let cursor = 0;
+			
+			while (cursor < data.length) {
+				let size = Math.ceil((data.length - cursor) * Math.random());
 
-let parser = new Parser(function (error, object) {
-	if (error) {
-		errors.push(error.message);
-	} else if (object) {
-		objects.push(object);
-	} else {
-		done = true;
+				if (size < 1) {
+					++size;
+				}
+
+				if (size == data.length) {
+					--size;
+				}
+
+				const chunk = data.substr(cursor, size);
+				chunks.push(chunk);
+				parser.parse(chunk);
+				cursor += size;
+			}
+			
+			assert.equal(errors.length, 0);
+			assert.equal(objects.length, 3);
+			assert.equal(done, true);
+		}
 	}
-});
+};
 
-let cursor = 0;
-
-while (cursor < data.length - 1) {
-	const size = Math.floor((data.length - cursor) * Math.random());
-	const chunk = data.substr(cursor, size);
-	parser.parse(chunk);
-	cursor += size;
+for (const name in tests) {
+	try {
+		tests[name]();
+	} catch (e) {
+		console.log(e);
+	}
 }
-
-assert.equal(errors.length, 0);
-assert.equal(objects.length, 3);
-assert.equal(done, true);
